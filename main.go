@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
+	"github.com/russross/blackfriday"
 )
 
 type Template struct {
@@ -28,7 +29,9 @@ func main() {
 }
 
 func Hello(ctx echo.Context) error {
-	return ctx.Render(http.StatusOK, "hello", "World")
+	markdown := []byte(ctx.Request().Header().Get("X-Markdown"))
+	output := blackfriday.MarkdownBasic(markdown)
+	return ctx.Render(http.StatusOK, "markdown-tmpl", string(output))
 }
 
 // 1. e.SetRenderer expects an arg that is of type Renderer
