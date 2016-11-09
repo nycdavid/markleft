@@ -1,9 +1,9 @@
 package main
 
 import (
-	"html/template"
 	"io"
 	"net/http"
+	"text/template"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
@@ -15,10 +15,7 @@ type Template struct {
 }
 
 func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	markdown := []byte("* Foobar\n* Barfoo")
-	output := blackfriday.MarkdownBasic(markdown)
-	io.WriteString(w, string(output))
-	return nil
+	return t.templates.ExecuteTemplate(w, name, data)
 }
 
 func main() {
@@ -32,10 +29,9 @@ func main() {
 }
 
 func Hello(ctx echo.Context) error {
-	// markdown := []byte(ctx.Request().Header().Get("X-Markdown"))
-	markdown := []byte("* Foobar")
-	output := blackfriday.MarkdownBasic(markdown)
-	return ctx.Render(http.StatusOK, "markdown-tmpl", string(output))
+	markdown := []byte(ctx.Request().Header().Get("X-Markdown"))
+	output := string(blackfriday.MarkdownCommon(markdown))
+	return ctx.Render(http.StatusOK, "markdown-tmpl", output)
 }
 
 // 1. e.SetRenderer expects an arg that is of type Renderer
