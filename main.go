@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"text/template"
 
 	"github.com/labstack/echo"
@@ -29,7 +31,11 @@ func main() {
 }
 
 func Hello(ctx echo.Context) error {
-	markdown := []byte(ctx.Request().Header().Get("X-Markdown"))
+	newStr := "* Foo \\n* Bar"
+	strings.Replace(newStr, "\\n", "\n", -1)
+	fmt.Println(newStr)
+	header := string(ctx.Request().Header().Get("X-Markdown"))
+	markdown := []byte(header)
 	output := string(blackfriday.MarkdownCommon(markdown))
 	return ctx.Render(http.StatusOK, "markdown-tmpl", output)
 }
