@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"net/http"
 	"text/template"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
+	"github.com/russross/blackfriday"
 )
 
 type Template struct {
@@ -28,18 +29,16 @@ func main() {
 	}
 	e := echo.New()
 	e.SetRenderer(t)
-	e.Post("/", Hello)
+	e.Post("/", MarkdownHandler)
 	e.Run(standard.New(":1323"))
 }
 
-func Hello(ctx echo.Context) error {
+func MarkdownHandler(ctx echo.Context) error {
 	var rb ReqBody
 	d := json.NewDecoder(ctx.Request().Body())
 	d.Decode(&rb)
-	fmt.Println(rb.Markdown)
-	return nil
-	// output := string(blackfriday.MarkdownCommon(markdown))
-	// return ctx.Render(http.StatusOK, "markdown-tmpl", output)
+	output := blackfriday.MarkdownCommon([]byte(rb.Markdown))
+	return ctx.Render(http.StatusOK, "markdown-tmpl", string(output))
 }
 
 // 1. e.SetRenderer expects an arg that is of type Renderer
