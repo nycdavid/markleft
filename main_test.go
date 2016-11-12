@@ -1,27 +1,29 @@
 package main
 
 import (
-	"errors"
-	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"text/template"
 
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/test"
+	"github.com/labstack/echo/engine/standard"
 )
 
-func TestMarkdownHandler404OnNonPost(t *testing.T) {
+func TestMarkdownHandler405OnNonPost(t *testing.T) {
 	tmpl := &Template{
 		templates: template.Must(template.ParseGlob("public/views/*.html")),
 	}
 	e := echo.New()
 	e.SetRenderer(tmpl)
-	e.Post("/", MarkdownHandler)
+	req, _ := http.NewRequest(echo.GET, "/", strings.NewReader(""))
+	rec := httptest.NewRecorder()
 
-	req := test.NewRequest("GET", "/", nil)
-	rec := test.NewResponseRecorder()
-	c := e.NewContext(req, rec)
-	e.DefaultHTTPErrorHandler(errors.New("error"), c)
-	fmt.Println(rec.Status())
-	// assert.Equal(t, http.StatusNotFound, rec.Status())
+	c := e.NewContext(standard.NewRequest(req, e.Logger()), standard.NewResponse(rec, e.Logger()))
+	MarkdownHandler(c)
+
+	if rec.Code != 405 {
+		t.Errorf("Expected status code to be 405, but got %v", rec.Code)
+	}
 }
