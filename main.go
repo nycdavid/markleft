@@ -37,6 +37,9 @@ func MarkdownHandler(ctx echo.Context) error {
 	var rb ReqBody
 	d := json.NewDecoder(ctx.Request().Body())
 	d.Decode(&rb)
+	if rb.Markdown == "" {
+		return ctx.JSON(http.StatusBadRequest, "Error: Missing markdown key/string")
+	}
 	output := blackfriday.MarkdownCommon([]byte(rb.Markdown))
 	return ctx.Render(http.StatusOK, "markdown-tmpl", string(output))
 }

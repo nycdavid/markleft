@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,19 +13,40 @@ import (
 	"github.com/labstack/echo/engine/standard"
 )
 
-func TestMarkdownHandler405OnNonPost(t *testing.T) {
+func TestMarkdownKeyMissingReturns400(t *testing.T) {
+	markdownJson := `{"foo": "bar"}`
 	tmpl := &Template{
 		templates: template.Must(template.ParseGlob("public/views/*.html")),
 	}
 	e := echo.New()
 	e.SetRenderer(tmpl)
-	req, _ := http.NewRequest(echo.GET, "/", strings.NewReader(""))
+	req, _ := http.NewRequest(echo.POST, "/", strings.NewReader(markdownJson))
 	rec := httptest.NewRecorder()
-
 	c := e.NewContext(standard.NewRequest(req, e.Logger()), standard.NewResponse(rec, e.Logger()))
 	MarkdownHandler(c)
 
-	if rec.Code != 405 {
+	if rec.Code != 400 {
 		t.Errorf("Expected status code to be 405, but got %v", rec.Code)
+	}
+}
+
+func TestMarkdownKeyMissingReturnsError(t *testing.T) {
+	errorMsg := "Error: Missing markdown key/string"
+	var jsonStr string
+	markdownJson := `{"foo": "bar"}`
+	tmpl := &Template{
+		templates: template.Must(template.ParseGlob("public/views/*.html")),
+	}
+	e := echo.New()
+	e.SetRenderer(tmpl)
+	req, _ := http.NewRequest(echo.POST, "/", strings.NewReader(markdownJson))
+	rec := httptest.NewRecorder()
+	c := e.NewContext(standard.NewRequest(req, e.Logger()), standard.NewResponse(rec, e.Logger()))
+	MarkdownHandler(c)
+	jsonBuf, _ := ioutil.ReadAll(rec.Body)
+	json.Unmarshal(jsonBuf, &jsonStr)
+
+	if jsonStr != errorMsg {
+		t.Errorf("Expected response to be %s, but got %s", errorMsg, jsonStr)
 	}
 }
