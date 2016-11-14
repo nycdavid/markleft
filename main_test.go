@@ -11,6 +11,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
+	"github.com/russross/blackfriday"
 )
 
 func TestMarkdownKeyMissingReturns400(t *testing.T) {
@@ -53,6 +54,7 @@ func TestMarkdownKeyMissingReturnsError(t *testing.T) {
 
 func TestValidMarkdownReturnsMarkup(t *testing.T) {
 	markdownJson := `{"markdown": "* Bar"}`
+	markdownMarkup := blackfriday.MarkdownCommon([]byte("* Bar"))
 	tmpl := &Template{
 		templates: template.Must(template.ParseGlob("public/views/*.html")),
 	}
@@ -62,12 +64,9 @@ func TestValidMarkdownReturnsMarkup(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(standard.NewRequest(req, e.Logger()), standard.NewResponse(rec, e.Logger()))
 	MarkdownHandler(c)
-	jsonBuf, _ := ioutil.ReadAll(rec.Body)
-	markup := `<ul>
-  <li>Bar</li>
-  </ul>`
 
-	if string(jsonBuf) != string(markup) {
-		t.Errorf("Expected response to be %s, but got %s", markup, string(jsonBuf))
+	respStr, _ := ioutil.ReadAll(rec.Body)
+	if string(respStr) != string(markdownMarkup) {
+		t.Errorf("Expected response to be %s, but got %s", string(markdownMarkup), string(respStr))
 	}
 }
