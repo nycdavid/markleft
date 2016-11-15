@@ -6,3 +6,6 @@
 # Handing a JSON `POST` request body
 
 # Testing an Echo endpoint
+
+# Deployments
+* The development/staging version of this application is hosted on Heroku.
