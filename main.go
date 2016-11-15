@@ -31,7 +31,7 @@ func main() {
 	e := echo.New()
 	e.SetRenderer(t)
 	e.Post("/", MarkdownHandler)
-	e.Run(standard.New(os.Getenv("PORT")))
+	e.Run(standard.New(":" + os.Getenv("PORT")))
 }
 
 func MarkdownHandler(ctx echo.Context) error {
