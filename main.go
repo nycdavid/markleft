@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 	"text/template"
 
 	"github.com/labstack/echo"
@@ -30,7 +31,7 @@ func main() {
 	e := echo.New()
 	e.SetRenderer(t)
 	e.Post("/", MarkdownHandler)
-	e.Run(standard.New(":1323"))
+	e.Run(standard.New(os.Getenv("PORT")))
 }
 
 func MarkdownHandler(ctx echo.Context) error {
